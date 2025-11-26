@@ -1,141 +1,141 @@
+import { resolveElements } from "@solid-primitives/refs";
 import {
   createContext,
+  createEffect,
   createSignal,
+  For,
+  on,
   onMount,
+  splitProps,
   useContext,
   type Accessor,
+  type FlowComponent,
   type JSX,
   type Setter,
   type ValidComponent,
 } from "solid-js";
-import { Dynamic, For } from "solid-js/web";
-
-import { animateFlipping, shuffle } from "../utils";
-
-const FlipContext = createContext<FlipGroupContextValue>();
-
-type ShuffleFn = (list: any[]) => any[];
+import { Dynamic } from "solid-js/web";
+import { animateFlipping } from "../utils";
 
 // - Root
+export interface FlipGroupProps {}
 
-export interface FlipGroupRootProps {
-  shuffle?: ShuffleFn;
-  children?: JSX.Element;
-}
+const FlipGroupContext = createContext<FlipGroupContextValue>();
 
-function FlipGroupRoot(props: FlipGroupRootProps): JSX.Element {
-  const [list, setList] = createSignal<any[]>([]);
-  const [contentItemRefs, setContentItemRefs] = createSignal<
-    Record<number, HTMLElement | null>
-  >({});
+type FlipGroupItemRefs = Record<number | string, HTMLElement | null>;
+
+const FlipGroupRoot: FlowComponent<FlipGroupProps> = (props) => {
+  const [local, other] = splitProps(props, []);
+  const [itemRefs, setItemRefs] = createSignal<FlipGroupItemRefs>({});
 
   const context: FlipGroupContextValue = {
-    list,
-    setList,
-    contentItemRefs,
-    setContentItemRefs,
-    shuffle: props.shuffle ?? shuffle,
+    itemRefs,
+    setItemRefs,
   };
 
   return (
-    <FlipContext.Provider value={context}>
+    <FlipGroupContext.Provider value={context}>
       {props.children}
-    </FlipContext.Provider>
+    </FlipGroupContext.Provider>
   );
-}
-
-export interface FlipGroupContextProps {
-  children?: JSX.Element;
-}
+};
 
 // - Context
-
 export interface FlipGroupContextValue {
-  list?: Accessor<any[]>;
-  setList?: Setter<any[]>;
-  shuffle?: ShuffleFn;
-  contentItemRefs: Accessor<Record<number, HTMLElement | null>>;
-  setContentItemRefs: Setter<Record<number, HTMLElement | null>>;
+  itemRefs: Accessor<FlipGroupItemRefs>;
+  setItemRefs: Setter<FlipGroupItemRefs>;
 }
 
-function useFlipGroupContext() {
-  const context = useContext(FlipContext);
+export function useFlipGroupContext() {
+  const context = useContext(FlipGroupContext);
 
   if (!context)
-    throw new Error("FlipGroupContext must be used within a FlipGroupRoot");
+    throw new Error(
+      "useFlipGroupContext must be used within a FlipGroupProvider",
+    );
 
   return context;
 }
 
-// - Button
-
-export interface FlipGroupButtonProps {
-  onClick?: () => void;
-  as?: ValidComponent;
-  children?: JSX.Element;
-}
-
-function FlipGroupButton(props: FlipGroupButtonProps): JSX.Element {
-  const { list, setList, contentItemRefs, shuffle } = useFlipGroupContext();
-
-  function clickHandler() {
-    if (props.onClick) props.onClick();
-    animateFlipping(contentItemRefs(), () => {
-      if (setList && list && shuffle) {
-        setList(shuffle(list()));
-      }
-    });
-  }
-
-  return (
-    <Dynamic component={props.as ?? "button"} onClick={clickHandler}>
-      {props.children}
-    </Dynamic>
-  );
-}
-
 // - Content
-
 export interface FlipGroupContentProps {
   as?: ValidComponent;
-  list: any[];
-  children?: JSX.Element;
 }
 
-function FlipGroupContent(props: FlipGroupContentProps): JSX.Element {
-  let refs: Record<number, HTMLElement | null> = {};
+const FlipGroupContent: FlowComponent<FlipGroupContentProps> = (props) => {
+  const [, other] = splitProps(props, ["as"]);
+  const { setItemRefs } = useFlipGroupContext();
+  const els = resolveElements(() => props.children);
 
-  const { list, setList, setContentItemRefs } = useFlipGroupContext();
+  // FLIP 动画效果
+  createEffect(
+    on(els.toArray, (els) => {
+      const lastRefs: FlipGroupItemRefs = {};
+      els.forEach((el, idx) => {
+        const key = el.id ?? idx;
+        if (el instanceof HTMLElement) lastRefs[key] = el;
+      });
 
-  onMount(() => {
-    setList?.(props.list);
-    setContentItemRefs(refs);
-  });
+      let firstRefs;
+      setItemRefs((preItemRefs) => {
+        firstRefs = preItemRefs;
+        return lastRefs;
+      });
+
+      if (firstRefs) animateFlipping(firstRefs, lastRefs);
+    }),
+  );
 
   return (
     <Dynamic
+      component={props.as ?? "div"}
       class="lo-flip-group__content"
-      component={props.as ?? "ul"}
-      list={props.list}
+      {...other}
     >
-      <For each={list?.()}>
-        {(itm, idx) => (
-          <Dynamic
-            class="lo-flip-group__item"
-            component={props.as ?? "li"}
-            ref={(el: HTMLElement) => {
-              refs[idx()] = el;
-            }}
-          >
-            {itm}
-          </Dynamic>
-        )}
-      </For>
+      <For each={els.toArray()}>{(el) => el}</For>
     </Dynamic>
   );
+};
+
+// - Item
+export interface FlipGroupItemProps {
+  as?: ValidComponent;
+  id?: string | number;
 }
+
+const FlipGroupItem: FlowComponent<FlipGroupItemProps> = (props) => {
+  const [local, other] = splitProps(props, ["as"]);
+
+  return <Dynamic component={local.as ?? "li"} {...other} />;
+};
+
+// - Button
+export interface FlipGroupButtonProps {
+  as?: ValidComponent;
+  onClick?: () => void;
+}
+
+const FlipGroupButton: FlowComponent<FlipGroupButtonProps> = (props) => {
+  const [local, other] = splitProps(props, ["as", "onClick"]);
+
+  const { itemRefs } = useFlipGroupContext();
+
+  const clickHandler: JSX.EventHandler<HTMLElement, MouseEvent> = (e) => {
+    local.onClick?.();
+  };
+
+  return (
+    <Dynamic
+      component={props.as ?? "button"}
+      class="lo-flip-group__button"
+      onClick={clickHandler}
+      {...other}
+    />
+  );
+};
 
 export const FlipGroup = Object.assign(FlipGroupRoot, {
   Button: FlipGroupButton,
   Content: FlipGroupContent,
+  Item: FlipGroupItem,
 });

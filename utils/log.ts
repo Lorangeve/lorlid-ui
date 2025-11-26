@@ -18,7 +18,7 @@ const linkStyle = "background:#1890ff;color:#fff;border-radius: 3px";
 
 type MsgType = "info" | "success" | "warning" | "error" | "default" | "link";
 
-export function lorlid_log(msgType: MsgType, ...msg: string[]) {
+export function lorlid_log(msgType: MsgType, ...msg: any[]) {
   switch (msgType) {
     case "info":
       console.log("%c[lorlid]", infoStyle, ...msg);
@@ -41,14 +41,14 @@ export function lorlid_log(msgType: MsgType, ...msg: string[]) {
   }
 }
 
-export function lorlid_info(...msg: string[]) {
+export function lorlid_info(...msg: any[]) {
   lorlid_log("info", ...msg);
 }
 
-export function lorlid_warning(...msg: string[]) {
+export function lorlid_warning(...msg: any[]) {
   lorlid_log("warning", ...msg);
 }
 
-export function lorlid_error(...msg: string[]) {
+export function lorlid_error(...msg: any[]) {
   lorlid_log("error", ...msg);
 }
