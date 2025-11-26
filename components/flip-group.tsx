@@ -11,7 +11,6 @@ import {
 import { Dynamic, For } from "solid-js/web";
 
 import { animateFlipping, shuffle } from "../utils";
-import { lorlid_log, lorlid_warning } from "../utils/log";
 
 const FlipContext = createContext<FlipGroupContextValue>();
 
