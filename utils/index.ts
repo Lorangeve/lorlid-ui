@@ -1,4 +1,5 @@
-// - FLIP 动画函数
+import { lorlid_info } from "./log";
+
 /**
  * FLIP 动画函数 - 通过记录元素位置变化实现平滑过渡
  * @param refs 元素引用对象
@@ -53,9 +54,17 @@ export function animateFlipping(
  * 随机打乱数组顺序（Fisher-Yates 洗牌算法，简单实现）
  * @param array
  */
-export function shuffle(array: any[]) {
-  for (let i = array.length - 1; i > 0; i--) {
+export function shuffle<T>(array: T[]): T[] {
+  let newArray = array.slice();
+
+  for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    const temp: T = newArray[i] as T;
+    newArray[i] = newArray[j] as T;
+    newArray[j] = temp;
   }
+
+  lorlid_info("使用默认的 shuffle 函数打乱数组顺序");
+
+  return newArray;
 }
