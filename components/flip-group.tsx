@@ -1,18 +1,19 @@
 import { resolveElements } from "@solid-primitives/refs";
+import type {
+  Accessor,
+  JSX,
+  ParentComponent,
+  Setter,
+  ValidComponent,
+} from "solid-js";
 import {
   createContext,
   createEffect,
   createSignal,
   For,
   on,
-  onMount,
   splitProps,
   useContext,
-  type Accessor,
-  type FlowComponent,
-  type JSX,
-  type Setter,
-  type ValidComponent,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { animateFlipping } from "../utils";
@@ -24,7 +25,7 @@ const FlipGroupContext = createContext<FlipGroupContextValue>();
 
 type FlipGroupItemRefs = Record<number | string, HTMLElement | null>;
 
-const FlipGroupRoot: FlowComponent<FlipGroupProps> = (props) => {
+const FlipGroupRoot: ParentComponent<FlipGroupProps> = (props) => {
   const [local, other] = splitProps(props, []);
   const [itemRefs, setItemRefs] = createSignal<FlipGroupItemRefs>({});
 
@@ -62,7 +63,7 @@ export interface FlipGroupContentProps {
   as?: ValidComponent;
 }
 
-const FlipGroupContent: FlowComponent<FlipGroupContentProps> = (props) => {
+const FlipGroupContent: ParentComponent<FlipGroupContentProps> = (props) => {
   const [, other] = splitProps(props, ["as"]);
   const { setItemRefs } = useFlipGroupContext();
   const els = resolveElements(() => props.children);
@@ -103,7 +104,7 @@ export interface FlipGroupItemProps {
   id?: string | number;
 }
 
-const FlipGroupItem: FlowComponent<FlipGroupItemProps> = (props) => {
+const FlipGroupItem: ParentComponent<FlipGroupItemProps> = (props) => {
   const [local, other] = splitProps(props, ["as"]);
 
   return <Dynamic component={local.as ?? "li"} {...other} />;
@@ -115,7 +116,7 @@ export interface FlipGroupButtonProps {
   onClick?: () => void;
 }
 
-const FlipGroupButton: FlowComponent<FlipGroupButtonProps> = (props) => {
+const FlipGroupButton: ParentComponent<FlipGroupButtonProps> = (props) => {
   const [local, other] = splitProps(props, ["as", "onClick"]);
 
   const { itemRefs } = useFlipGroupContext();
