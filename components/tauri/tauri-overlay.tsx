@@ -4,6 +4,7 @@ import {
   splitProps,
   createSignal,
   type Component,
+  type ParentComponent,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
@@ -17,7 +18,7 @@ import {
 
 export interface TauriOverlayProps extends TauriDragEventProps {}
 
-export const TauriOverlay: Component<TauriOverlayProps> = (props) => {
+export const TauriOverlay: ParentComponent<TauriOverlayProps> = (props) => {
   let ref: HTMLDivElement | undefined;
   const [local, other] = splitProps(props, [
     "onDragEnter",
@@ -75,7 +76,7 @@ export const TauriOverlay: Component<TauriOverlayProps> = (props) => {
   return (
     <Dynamic
       class="lo-tauri-overlay"
-      ref={(el) => (ref = el as HTMLDivElement)}
+      ref={(el: HTMLElement) => (ref = el as HTMLDivElement)}
       component={"div"}
       {...other}
     ></Dynamic>

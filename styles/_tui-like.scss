@@ -1,0 +1,83 @@
+@use "./color" as clr;
+@use "sass:color";
+
+%scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: clr.$tui-border transparent;
+    scrollbar-gutter: stable;
+}
+
+button {
+    $background-color: color.adjust(
+        clr.$tui-background,
+        $lightness: 20%,
+        $hue: 180
+    );
+
+    width: 100%;
+    border: none;
+    background-color: $background-color;
+    box-shadow: none;
+
+    $text-color: color.adjust(clr.$tui-text, $lightness: 20%, $hue: 180);
+    color: $text-color;
+
+    &:hover {
+        background-color: color.adjust($background-color, $lightness: 10%);
+    }
+}
+
+input[type="input"] {
+    $background-color: color.adjust(clr.$tui-background, $lightness: 2%);
+    $inset-tl-color: color.adjust(clr.$tui-background, $lightness: -20%);
+    $inset-br-color: color.adjust(clr.$tui-background, $lightness: 20%);
+
+    background-color: $background-color;
+    border: 1px solid clr.$tui-border;
+    box-shadow:
+        inset 1px 1px 2px $inset-tl-color,
+        inset -1px -1px 1px $inset-br-color;
+
+    color: clr.$tui-text;
+
+    width: 100%;
+    padding: 1px 3px;
+}
+
+nav,
+section {
+    border: 1px solid clr.$tui-border;
+    text-overflow: clip;
+}
+
+header {
+    flex-basis: 15px;
+    background-color: clr.$tui-background;
+}
+
+footer {
+    flex-basis: 15px;
+    background-color: clr.$tui-background;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+
+    span {
+        font-size: 15px;
+        margin-right: 10px;
+
+        $delimiter-color: color.adjust(clr.$tui-border, $lightness: 15%);
+        &::after {
+            display: inline;
+            vertical-align: top;
+            content: "|";
+            color: $delimiter-color;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        &:last-child::after {
+            content: none;
+        }
+    }
+}
